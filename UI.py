@@ -16,7 +16,6 @@ class HandspeakUI(QWidget):
         self.initUI()
 
     def set_background(self):
-        # Set the background image to be responsive
         background = QPixmap("ASL hand recognition/src/BG2.png")
         background = background.scaled(self.size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
         palette = QPalette()
@@ -27,6 +26,17 @@ class HandspeakUI(QWidget):
         # Ensure the background image resizes properly when the window size changes
         self.set_background()
         super().resizeEvent(event)
+        self.adjust_button_size()
+
+    def adjust_button_size(self):
+        # Increase button size when the window is maximized (full screen)
+        if self.isMaximized():
+            button_size = 18  # Larger font size
+        else:
+            button_size = 13  # Regular font size
+        
+        for btn in self.findChildren(QPushButton):
+            btn.setFont(QFont("Segoe UI", button_size, QFont.Bold))
 
     def initUI(self):
         main_layout = QVBoxLayout(self)
@@ -34,12 +44,10 @@ class HandspeakUI(QWidget):
         # ===== Header with Title and Icon on Left =====
         header_layout = QHBoxLayout()
 
-        # Add icon to the left of the header (change to your icon file path)
         header_icon = QLabel()
         header_icon.setPixmap(QIcon("header_icon.png").pixmap(40, 40))
         header_layout.addWidget(header_icon, alignment=Qt.AlignLeft)
 
-        # Title text
         header = QLabel("HANDSPEAK")
         header.setFont(QFont("Arial", 30, QFont.Bold))
         header.setAlignment(Qt.AlignCenter)
@@ -48,10 +56,9 @@ class HandspeakUI(QWidget):
         header_layout.setAlignment(Qt.AlignCenter)
         main_layout.addLayout(header_layout)
 
-        # ===== Add space between header and body =====
         main_layout.addSpacing(30)
 
-        # ===== Main Body Layout =====
+        # ===== Main Body Layout (without Live Preview) =====
         body_layout = QHBoxLayout()
 
         # ------ Left Menu ------ (same as before)
@@ -73,6 +80,7 @@ class HandspeakUI(QWidget):
                 }}
                 QPushButton:hover {{
                     background-color: rgba(255, 255, 255, 0.15);
+                    background-color: rgba(255, 255, 255, 0.2);
                 }}
                 QPushButton:pressed {{
                     background-color: rgba(255, 255, 255, 0.25);
@@ -100,27 +108,15 @@ class HandspeakUI(QWidget):
         menu_layout.addWidget(settings_btn)
         menu_layout.addWidget(about_btn)
 
-        # ===== Add space between the menu and live preview =====
+        # ===== Add Spacer to Adjust Space Between Buttons =====
         menu_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
-        # ------ Live Preview Box ------ (no camera feed now)
-        preview_frame = QFrame()
-        preview_frame.setStyleSheet("background-color: rgba(0, 0, 0, 0.7); border-radius: 12px;")
-        preview_frame.setMinimumSize(350, 350)
-
-        preview_layout = QVBoxLayout(preview_frame)
-        preview_label = QLabel("LIVE PREVIEW")
-        preview_label.setStyleSheet("color: white;")
-        preview_label.setFont(QFont("Arial", 14))
-        preview_label.setAlignment(Qt.AlignCenter)
-        preview_layout.addWidget(preview_label)
-
-        # Add menu and preview to main body
+        # Add menu to body layout (removed the preview section)
         body_layout.addLayout(menu_layout)
-        body_layout.addWidget(preview_frame)
+
         main_layout.addLayout(body_layout)
 
-        # ===== Add space between preview and quote =====
+        # ===== Add space between the menu and quote =====
         main_layout.addSpacing(30)
 
         # ===== Quote =====
@@ -136,11 +132,6 @@ class HandspeakUI(QWidget):
             subprocess.Popen(["python", script_path], shell=True)
         except Exception as e:
             print(f"Error occurred while starting the communication: {e}")
-            
-    def open_settings(self):
-        from settings_ui import SettingsUI  # or from settings_ui_no_preview import SettingsUINoPreview
-        settings_window = SettingsUI(with_live_preview=True)  # or SettingsUINoPreview
-        settings_window.show()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
